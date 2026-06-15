@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>EKAGRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --card: #161616;
+    --border: #1e1e1e;
+    --border-lit: #2a2a2a;
+    --accent: #c8a97e;
+    --accent-dim: #6b5a3e;
+    --ember: #b5562f;
+    --ember-dim: #3d2817;
+    --red: #8b2a2a;
+    --green: #2a5c3a;
+    --green-lit: #3d8b57;
+    --text: #d4d0c8;
+    --muted: #5a5652;
+    --faint: #2e2b28;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    padding-bottom: 76px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    padding: 28px 18px 18px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+  }
+
+  .header-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .brand-block {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 5px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .brand .accent-letter { color: var(--accent); }
+
+  .sub-brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .day-pill {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    border: 1px solid var(--border-lit);
+    padding: 4px 10px;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  .focus-line {
+    margin-top: 12px;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    border-left: 1px solid var(--accent-dim);
+    padding-left: 12px;
+  }
+
+  /* ===== TABS ===== */
+  .tab-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px 0 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+    position: relative;
+  }
+
+  .tab-btn.active { color: var(--accent); }
+
+  .tab-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 30%; right: 30%;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .tab-icon {
+    width: 18px; height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.4;
+  }
+
+  /* ===== VIEWS ===== */
+  .view {
+    display: none;
+    padding: 20px 14px 20px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .view.active { display: block; }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+
+  /* ===== VOLUME RING (signature element) ===== */
+  .ring-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
+
+  .ring-card {
+    background: var(--card);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .ring-card:active { background: #1a1a1a; }
+
+  .ring-svg {
+    width: 64px; height: 64px;
+  }
+
+  .ring-track {
+    fill: none;
+    stroke: var(--faint);
+    stroke-width: 4;
+  }
+
+  .ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.3s;
+  }
+
+  .ring-fill.over { stroke: var(--green-lit); }
+  .ring-fill.danger-flag { stroke: var(--ember); }
+
+  .ring-center-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    fill: var(--text);
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .ring-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .ring-target {
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .ring-status {
+    font-size: 8px;
+    letter-spacing: 1px;
+    padding: 1px 6px;
+    border: 1px solid var(--border-lit);
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .ring-status.over { border-color: var(--green); color: var(--green-lit); }
+  .ring-status.under { border-color: var(--red); color: #c44; }
+  .ring-status.ok { border-color: var(--accent-dim); color: var(--accent); }
+
+  /* ===== MUSCLE DETAIL CARD ===== */
+  .muscle-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .md-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .md-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--text);
+  }
+
+  .md-meta {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  .md-close {
+    background: none;
+    border: 1px solid var(--border-lit);
+    color: var(--muted);
+    width: 26px; height: 26px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .md-note {
+    padding: 14px 16px;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ex-block {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ex-block:last-child { border-bottom: none; }
+
+  .ex-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px;
+  }
+
+  .ex-title {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text);
+    letter-spacing: 0.3px;
+  }
+
+  .ex-type-badge {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    border: 1px solid var(--border-lit);
+    padding: 1px 6px;
+    text-transform: uppercase;
+  }
+
+  .ex-cues {
+    padding: 0 16px 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cue-tag {
+    font-size: 10px;
+    color: var(--muted);
+    border: 1px solid var(--faint);
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .cue-tag .cue-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .cue-tag.preferred { border-color: var(--accent-dim); color: var(--text); }
+  .cue-tag.preferred .cue-label { color: var(--accent); }
+
+  /* ===== LOG GRID (sets/reps/weight per day) ===== */
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 12px;
+  }
+
+  .log-table th {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 4px 16px 4px 0;
+    text-align: left;
+  }
+
+  .log-row { padding: 0 16px; }
+
+  .log-cell-wrap {
+    padding: 8px 16px 10px;
+  }
+
+  .day-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 16px 10px;
+    flex-wrap: wrap;
+  }
+
+  .day-tab {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    border: 1px solid var(--border-lit);
+    color: var(--muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .day-tab.active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .day-tab .day-count {
+    color: var(--accent);
+    margin-left: 4px;
+  }
+
+  .day-tab.active .day-count { color: var(--bg); }
+  .day-tab.active { background: var(--accent); color: var(--bg); }
+  .day-tab.active .day-count { color: var(--bg); }
+
+  .sets-list {
+    padding: 0 16px 14px;
+  }
+
+  .set-row {
+    display: grid;
+    grid-template-columns: 24px 1fr 1fr 1fr 28px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .set-num {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+  }
+
+  .set-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 7px 8px;
+    text-align: center;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  .set-input:focus { outline: none; border-color: var(--accent-dim); }
+  .set-input::placeholder { color: var(--border-lit); }
+
+  .set-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 28px; height: 28px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .set-remove:hover { border-color: var(--red); color: #c44; }
+
+  .input-labels {
+    display: grid;
+    grid-template-columns: 24px 1fr 1fr 1fr 28px;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding: 0 16px;
+  }
+
+  .input-labels span {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .add-set-btn {
+    background: none;
+    border: 1px dashed var(--border-lit);
+    color: var(--accent-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .add-set-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .add-set-wrap { padding: 0 16px 14px; }
+
+  /* ===== ADD EXERCISE ===== */
+  .add-exercise-row {
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-exercise-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .add-exercise-input:focus { outline: none; border-color: var(--accent-dim); }
+
+  .add-exercise-btn {
+    background: var(--accent-dim);
+    border: none;
+    color: var(--bg);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+
+  /* ===== SUMMARY CARDS ===== */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+  }
+
+  .summary-item { background: var(--card); padding: 12px 14px; }
+
+  .s-label {
+    font-size: 8px;
+    letter-spacing: 2.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .s-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .s-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+  /* ===== WEEK NAV ===== */
+  .week-nav-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--border-lit);
+    margin-bottom: 16px;
+    width: fit-content;
+  }
+
+  .week-nav-row button {
+    background: none; border: none; color: var(--accent);
+    cursor: pointer; padding: 6px 12px; font-family: 'DM Mono', monospace; font-size: 13px;
+  }
+
+  .week-nav-row button:hover { background: var(--faint); }
+
+  .week-nav-display {
+    padding: 6px 14px;
+    border-left: 1px solid var(--border-lit);
+    border-right: 1px solid var(--border-lit);
+    font-size: 11px;
+  }
+
+  /* ===== SCHEDULE ===== */
+  .schedule-day {
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 1px;
+    padding: 14px 16px;
+  }
+
+  .sd-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .sd-day {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .sd-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .sd-muscles {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .sd-ruler {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--accent-dim);
+    margin-top: 6px;
+  }
+
+  /* ===== READINESS / STREAK ===== */
+  .readiness-card, .streak-card, .overload-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .rc-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .rc-question { margin-bottom: 12px; }
+
+  .rc-question-label {
+    font-size: 11px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .rc-options {
+    display: flex;
+    gap: 6px;
+  }
+
+  .reset-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .reset-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .reset-row:first-of-type { padding-top: 0; }
+
+  .reset-title {
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .reset-title.danger { color: #c44; }
+
+  .reset-sub {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border-lit);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .reset-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+  .reset-btn.danger { border-color: var(--red); color: #c44; }
+  .reset-btn.danger:hover { background: var(--red); color: #fcc; }
+
+  .rc-option {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border-lit);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 8px 4px;
+    text-align: center;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .rc-option.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--faint);
+  }
+
+  /* ===== SESSION MODE ===== */
+  .session-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    flex-direction: column;
+  }
+
+  .session-overlay.active { display: flex; }
+
+  .session-top {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .session-day-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+  }
+
+  .session-timer-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .session-exit {
+    background: none; border: 1px solid var(--border-lit);
+    color: var(--muted); width: 30px; height: 30px; cursor: pointer; font-size: 16px;
+  }
+
+  .session-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+  }
+
+  .session-progress {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .session-muscle {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .session-exercise {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .session-cues {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .session-cue {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 12px;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .session-cue.preferred { border-color: var(--accent-dim); }
+
+  .session-cue-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+    font-style: normal;
+  }
+
+  .session-input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .session-input-group label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .session-input-group input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .session-input-group input:focus { outline: none; border-color: var(--accent); }
+
+  .effort-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .effort-btn {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .effort-btn.selected.easy { border-color: var(--green); color: var(--green-lit); background: rgba(61,139,87,0.08); }
+  .effort-btn.selected.moderate { border-color: var(--accent-dim); color: var(--accent); background: var(--faint); }
+  .effort-btn.selected.failure { border-color: var(--ember); color: var(--ember); background: rgba(181,86,47,0.08); }
+
+  .session-log-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    color: var(--bg);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 16px;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+
+  .session-set-log {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .session-set-log-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--faint);
+  }
+
+  /* ===== REST TIMER OVERLAY ===== */
+  .rest-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.96);
+    z-index: 600;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .rest-overlay.active { display: flex; }
+
+  .rest-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .rest-ring-wrap {
+    position: relative;
+    width: 220px; height: 220px;
+    margin-bottom: 24px;
+  }
+
+  .rest-time {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rest-extend-note {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ember);
+    margin-bottom: 20px;
+    min-height: 18px;
+  }
+
+  .rest-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .rest-btn {
+    background: none;
+    border: 1px solid var(--border-lit);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .rest-btn.primary { border-color: var(--accent); color: var(--accent); }
+
+  /* ===== CHARTS ===== */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .chart-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 100px;
+    margin-bottom: 8px;
+  }
+
+  .chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .chart-bar {
+    width: 100%;
+    background: var(--accent-dim);
+    transition: height 0.4s;
+    min-height: 2px;
+  }
+
+  .chart-bar.in-target { background: var(--accent); }
+  .chart-bar.over { background: var(--green-lit); }
+
+  .chart-bar-label {
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ===== OVERLOAD LOG ===== */
+  .overload-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--faint);
+    font-size: 11px;
+  }
+
+  .overload-row:last-child { border-bottom: none; }
+
+  .overload-name { color: var(--text); }
+
+  .overload-weight {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--accent);
+  }
+
+  .overload-flag {
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--green-lit);
+    border: 1px solid var(--green);
+    padding: 2px 6px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ===== STREAK ===== */
+  .streak-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+  }
+
+  .streak-item {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .streak-flame {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--ember);
+  }
+
+  .streak-name {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    z-index: 700;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 380px) {
+    .ring-grid { grid-template-columns: repeat(2, 1fr); }
+    .session-exercise { font-size: 22px; }
+    .rest-ring-wrap { width: 180px; height: 180px; }
+    .rest-time { font-size: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="brand-block">
+      <div class="brand"><span class="accent-letter">1</span>EVEN</div>
+      <div class="sub-brand">EKAGRA</div>
+    </div>
+    <div class="day-pill" id="dayPill">—</div>
+  </div>
+  <div class="focus-line" id="focusLine">—</div>
+</header>
+
+<!-- TRAIN TAB -->
+<div class="view active" id="view-train">
+  <div class="section-label">// today's session</div>
+  <div id="trainContent"></div>
+</div>
+
+<!-- TRACK TAB -->
+<div class="view" id="view-track">
+  <div class="week-nav-row">
+    <button onclick="changeWeek(-1)">←</button>
+    <div class="week-nav-display" id="weekDisplay">—</div>
+    <button onclick="changeWeek(1)">→</button>
+  </div>
+  <div class="summary-bar" id="summaryBar"></div>
+  <div class="section-label">// volume rings — tap to log</div>
+  <div class="ring-grid" id="ringGrid"></div>
+  <div id="muscleDetail"></div>
+</div>
+
+<!-- SCHEDULE TAB -->
+<div class="view" id="view-schedule">
+  <div class="section-label">// weekly split</div>
+  <div id="scheduleContent"></div>
+</div>
+
+<!-- PROGRESS TAB -->
+<div class="view" id="view-progress">
+  <div class="readiness-card" id="readinessCard"></div>
+  <div class="section-label">// volume trend (last 4 weeks)</div>
+  <div id="chartsContent"></div>
+  <div class="section-label">// progressive overload</div>
+  <div class="overload-card" id="overloadCard"></div>
+  <div class="section-label">// streaks</div>
+  <div class="streak-card">
+    <div class="streak-grid" id="streakGrid"></div>
+  </div>
+  <div class="section-label">// reset</div>
+  <div class="readiness-card">
+    <div class="rc-title">Reset Data</div>
+    <div class="reset-row">
+      <div class="reset-text">
+        <div class="reset-title">Today's session</div>
+        <div class="reset-sub">Clears all sets logged for today only</div>
+      </div>
+      <button class="reset-btn" onclick="confirmReset('today')">Reset</button>
+    </div>
+    <div class="reset-row">
+      <div class="reset-text">
+        <div class="reset-title" id="resetWeekLabel">This week</div>
+        <div class="reset-sub">Clears all logs, custom exercises & notes for the viewed week</div>
+      </div>
+      <button class="reset-btn" onclick="confirmReset('week')">Reset</button>
+    </div>
+    <div class="reset-row">
+      <div class="reset-text">
+        <div class="reset-title">Overload history</div>
+        <div class="reset-sub">Clears tracked max weights for all exercises</div>
+      </div>
+      <button class="reset-btn" onclick="confirmReset('overload')">Reset</button>
+    </div>
+    <div class="reset-row">
+      <div class="reset-text">
+        <div class="reset-title danger">Everything</div>
+        <div class="reset-sub">Wipes all logs, weeks, cue preferences, overload history & streaks</div>
+      </div>
+      <button class="reset-btn danger" onclick="confirmReset('all')">Reset All</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="train" onclick="switchTab('train')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M6 8v8M3 11v2M21 11v2M18 8v8M9 6v12M15 6v12"/></svg>
+    Train
+  </button>
+  <button class="tab-btn" data-tab="track" onclick="switchTab('track')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+    Track
+  </button>
+  <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+    Schedule
+  </button>
+  <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8M3 21h18"/></svg>
+    Progress
+  </button>
+</div>
+
+<!-- SESSION MODE OVERLAY -->
+<div class="session-overlay" id="sessionOverlay">
+  <div class="session-top">
+    <div class="session-day-title" id="sessionDayTitle">—</div>
+    <div class="session-timer-display" id="sessionTimerDisplay">00:00</div>
+    <button class="session-exit" onclick="exitSession()">✕</button>
+  </div>
+  <div class="session-body" id="sessionBody"></div>
+</div>
+
+<!-- REST TIMER OVERLAY -->
+<div class="rest-overlay" id="restOverlay">
+  <div class="rest-label" id="restLabel">REST</div>
+  <div class="rest-ring-wrap">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <circle cx="110" cy="110" r="100" fill="none" stroke="#2e2b28" stroke-width="4"/>
+      <circle id="restRingFill" cx="110" cy="110" r="100" fill="none" stroke="#c8a97e" stroke-width="4"
+        stroke-linecap="round" transform="rotate(-90 110 110)"
+        stroke-dasharray="628" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s linear;"/>
+    </svg>
+    <div class="rest-time" id="restTimeDisplay">2:45</div>
+  </div>
+  <div class="rest-extend-note" id="restExtendNote"></div>
+  <div class="rest-actions">
+    <button class="rest-btn" onclick="addRestTime(-15)">−15s</button>
+    <button class="rest-btn" onclick="addRestTime(15)">+15s</button>
+  </div>
+  <div class="rest-actions" style="margin-top: 12px;">
+    <button class="rest-btn primary" id="restToggleBtn" onclick="toggleRest()">Start</button>
+    <button class="rest-btn" onclick="resetRest()">Reset</button>
+    <button class="rest-btn" onclick="skipRest()">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
